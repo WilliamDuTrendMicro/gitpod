@@ -56,10 +56,12 @@ jobs:
           export WS_ENDPOINT=$(jq -r '.inputs.secret_endpoint' $GITHUB_EVENT_PATH)
           export GATEWAY_PLUGIN_PATH=$(pwd)/build/gateway-test.zip
 
-          echo "$WS_ENDPOINT ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDMaWYf9zrhI79dA9iBi7qF1anYtUCdT9l0xG2w9oNKHezKuSrJb+pFbHPsL/HuBHK8Yx1HJEufE4uIv//WGCOlCIdW4D40aKhEu5WXtpo8zI0SxkuOvaWDRuUbYNb3/oNNo79WNuhXR6mWn5skm6D+J5vv8H7V5tYrsZf6UqYZF5uLkeQFsis0UVm3+jNFVY/PuHbo6ndrh9DFCQF4YhMQpGTAG0PLal4VLJ4L31TOnb3buBtCWcf3CslT8IiqREdFcJE6MjaMVMCgENQHRWQ57vjv0xKxoI/sA1tMMzD8KrZxC+yB7Qwiby/8iAuhb1Zluh8sxH0NBv8fh1zI8rxbwP5pG3MnTxsCKYpBN01hyuFWtruARfrEGtSMZ4z5oMAFl08BuXSq+e1Ty/dEjfxv2EuG6enU0EJezqJLeCLWqVPZw7hncJD74J4H2pHlk9v3/q9EAD83GY++IChChBLK6wQybEVk+Md7n9GxjCiDAowspSTnq5FHPuKRjDpc1s8=" >> ~/.ssh/known_hosts
+          echo "$WS_ENDPOINT ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCybpjrskn0GkkjkxgT/OK108wu1UkCkWVkuvA+TEMtjnyNvwPs7PJZwk1N1Isk7F40/1eF3luTixDcvzTn4R6AAWG2/DRbDJTUoy9bV2MH84bB64SMBLYwRUj60e8zF1GFGtQxolrIO75M61qqAM1vCkpEAuLszKIC7xKkYNIVI1sDXAZDrRjn5MdtFSRpeTCN7mt6EvZVtZKPgzUkSiA507w0IxexSX8OEz1UxidMoTagS8wK+U+VaMWJja6bQ6jqzZ7Ou/uCz0Q99q7hFs0cdAh5Q2KNDG518PB750FoUIxWBsniHtRMh2YLtkrYdHhjRVsmg3ltG78hM3iISCbro4avUo3d7IKL97mLAETKxvAwUTn5pcNzk8jSqo51RlmxWHMgE++xNUeuUirhXTzQHSlCcbKsNcdP9gc2jMOQPAiRmHtzLIuHGGwS85M146PsFy6DG/XZOhu9/DhGVMq51NDKs3X8JHzXVGWxmZqLfM9BM+rojvepZgUa5S1mdwE=" >> ~/.ssh/known_hosts
           echo "$WS_ENDPOINT ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDMaWYf9zrhI79dA9iBi7qF1anYtUCdT9l0xG2w9oNKHezKuSrJb+pFbHPsL/HuBHK8Yx1HJEufE4uIv//WGCOlCIdW4D40aKhEu5WXtpo8zI0SxkuOvaWDRuUbYNb3/oNNo79WNuhXR6mWn5skm6D+J5vv8H7V5tYrsZf6UqYZF5uLkeQFsis0UVm3+jNFVY/PuHbo6ndrh9DFCQF4YhMQpGTAG0PLal4VLJ4L31TOnb3buBtCWcf3CslT8IiqREdFcJE6MjaMVMCgENQHRWQ57vjv0xKxoI/sA1tMMzD8KrZxC+yB7Qwiby/8iAuhb1Zluh8sxH0NBv8fh1zI8rxbwP5pG3MnTxsCKYpBN01hyuFWtruARfrEGtSMZ4z5oMAFl08BuXSq+e1Ty/dEjfxv2EuG6enU0EJezqJLeCLWqVPZw7hncJD74J4H2pHlk9v3/q9EAD83GY++IChChBLK6wQybEVk+Md7n9GxjCiDAowspSTnq5FHPuKRjDpc1s8=" >> ~/.ssh/known_hosts
           mkdir -p ~/Library/Application\ Support/JetBrains/consentOptions
           echo -n "rsch.send.usage.stat:1.1:0:1644945193441" > ~/Library/Application\ Support/JetBrains/consentOptions/accepted
+          mkdir -p ~/Library/Application\ Support/JetBrains/JetBrainsClient/options
+          touch ~/Library/Application\ Support/JetBrains/JetBrainsClient/options/ide.general.xml
           gradle :test
       - name: Move video
         if: always()
