@@ -56,6 +56,7 @@ func forTestingOnlyManagerConfig() config.Configuration {
 			Initialization:      util.Duration(30 * time.Minute),
 			TotalStartup:        util.Duration(45 * time.Minute),
 			RegularWorkspace:    util.Duration(60 * time.Minute),
+			MaxLifetime:         util.Duration(2160 * time.Minute),
 			HeadlessWorkspace:   util.Duration(90 * time.Minute),
 			Stopping:            util.Duration(60 * time.Minute),
 			ContentFinalization: util.Duration(55 * time.Minute),

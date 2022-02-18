@@ -667,6 +667,7 @@ const (
 	activityPullingImages      activity = "pulling images"
 	activityRunningHeadless    activity = "running the headless workspace"
 	activityNone               activity = "period of inactivity"
+	activityMaxLifetime        activity = "maximum lifetime"
 	activityClosed             activity = "after being closed"
 	activityInterrupted        activity = "workspace interruption"
 	activityStopping           activity = "stopping"
@@ -716,8 +717,15 @@ func (m *Manager) isWorkspaceTimedOut(wso workspaceObjects) (reason string, err 
 		return decide(start, m.Config.Timeouts.TotalStartup, activity)
 
 	case api.WorkspacePhase_RUNNING:
-		timeout := m.Config.Timeouts.RegularWorkspace
-		activity := activityNone
+		// First check is always for the max lifetime
+		timeout := m.Config.Timeouts.MaxLifetime
+		activity := activityMaxLifetime
+		if msg, err := decide(start, timeout, activity); msg != "" {
+			return msg, err
+		}
+
+		timeout = m.Config.Timeouts.RegularWorkspace
+		activity = activityNone
 		if wso.IsWorkspaceHeadless() {
 			timeout = m.Config.Timeouts.HeadlessWorkspace
 			lastActivity = &start
