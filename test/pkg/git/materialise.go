@@ -13,6 +13,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -64,6 +66,32 @@ func (ops Ops) Materialise(repo *git.Repository) error {
 	}
 
 	return nil
+}
+
+// OpsFromFixture produces a set of operations which replicate a local file structure
+// in a repository. Note: this function only picks up on files, not commits or branches.
+func OpsFromFixture(path string) (Ops, error) {
+	var res []Op
+
+	err := filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.Type().IsRegular() {
+			return nil
+		}
+		fc, err := ioutil.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		res = append(res, OpAddFile(path, string(fc)))
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return Ops(res), nil
 }
 
 // Op modifies a repo
