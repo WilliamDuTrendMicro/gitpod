@@ -14,6 +14,8 @@
     <dependencies>
         <plugin id="com.intellij.modules.platform"/>
         <plugin id="Git4Idea"/>
+        <plugin id="org.jetbrains.plugins.terminal"/>
+        <plugin id="com.jetbrains.codeWithMe"/>
     </dependencies>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -28,4 +30,7 @@
         <projectService serviceImplementation="io.gitpod.jetbrains.remote.GitpodProjectManager" preload="true"/>
     </extensions>
 
+    <projectListeners>
+        <listener class="io.gitpod.jetbrains.remote.GitpodToolWindowManagerListener" topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>
+    </projectListeners>
 </idea-plugin>
