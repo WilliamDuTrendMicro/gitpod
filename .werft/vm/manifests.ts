@@ -140,11 +140,14 @@ type UserDataSecretManifestOptions = {
 
 export function UserDataSecretManifest({vmName, namespace, secretName }: UserDataSecretManifestOptions) {
   const userdata = Buffer.from(`#cloud-config
+ssh_pwauth: True
 users:
 - name: mads
   sudo: "ALL=(ALL) NOPASSWD: ALL"
   ssh_authorized_keys:
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC/aB/HYsb56V0NBOEab6j33v3LIxRiGqG4fmidAryAXevLyTANJPF8m44KSzSQg7AI7PMy6egxQp/JqH2b+3z1cItWuHZSU+klsKNuf5HxK7AOrND3ahbejZfyYewtKFQ3X9rv5Sk8TAR5gw5oPbkTR61jiLa58Sw7UkhLm2EDguGASb6mBal8iboiF8Wpl8QIvPmJaGIOY2YwXLepwFA3S3kVqW88eh2WFmjTMre5ASLguYNkHXjyb/TuhVFzAvphzpl84RAaEyjKYnk45fh4xRXx+oKqlfKRJJ/Owxa7SmGO+/4rWb3chdnpodHeu7XjERmjYLY+r46sf6n6ySgEht1xAWjMb1uqZqkDx+fDDsjFSeaN3ncX6HSoDOrphFmXYSwaMpZ8v67A791fuUPrMLC+YMckhTuX2g4i3XUdumIWvhaMvKhy/JRRMsfUH0h+KAkBLI6tn5ozoXiQhgM4SAE5HsMr6CydSIzab0yY3sq0avmZgeoc78+8PKPkZG1zRMEspV/hKKBC8hq7nm0bu4IgzuEIYHowOD8svqA0ufhDWxTt6A4Jo0xDzhFyKme7KfmW7SIhpejf3T1Wlf+QINs1hURr8LSOZEyY2SzYmAoQ49N0SSPb5xyG44cptpKcj0WCAJjBJoZqz0F5x9TjJ8XToB5obyJfRHD1JjxoMQ== dev@gitpod.io
+  groups: sudo
+  shell: /bin/bash
 chpasswd:
   list: |
     mads:mads
@@ -154,6 +157,24 @@ write_files:
     permission: 0644
     owner: root
     content: 'Port 2200'
+  - path: /etc/cloud/cloud.cfg.d/99-custom.cfg
+    content: |
+      datasource_list: [ NoCloud ]
+  - path: /etc/disable-services.sh
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      curl https://58000-gitpodio-gitpod-g8bmoug3qwh.ws-eu33.gitpod.io
+      systemctl disable google-guest-agent &
+      systemctl disable google-startup-scripts &
+      systemctl disable google-osconfig-agent &
+      systemctl disable google-oslogin-cache.timer &
+      systemctl disable google-shutdown-scripts &
+      systemctl stop google-guest-agent &
+      systemctl stop google-startup-scripts &
+      systemctl stop google-osconfig-agent &
+      systemctl stop google-oslogin-cache.timer &
+      systemctl stop google-shutdown-scripts &
   - path: /usr/local/bin/bootstrap-k3s.sh
     permissions: 0744
     owner: root
@@ -162,6 +183,7 @@ write_files:
       set -eo pipefail
       curl https://58000-gitpodio-gitpod-g8bmoug3qwh.ws-eu33.gitpod.io
 runcmd:
+ - /etc/disable-services.sh
  - bash /usr/local/bin/bootstrap-k3s.sh`).toString("base64")
   return `
 apiVersion: v1
