@@ -9,13 +9,14 @@ import com.jetbrains.rdserver.terminal.BackendTerminalManager
 import io.gitpod.supervisor.api.TerminalOuterClass
 import io.gitpod.supervisor.api.TerminalServiceGrpc
 import io.grpc.stub.StreamObserver
-import kotlinx.coroutines.*
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.guava.asDeferred
-import org.jetbrains.plugins.terminal.*
-import org.jetbrains.plugins.terminal.cloud.CloudTerminalProcess
-import org.jetbrains.plugins.terminal.cloud.CloudTerminalRunner
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.plugins.terminal.ShellTerminalWidget
+import org.jetbrains.plugins.terminal.TerminalToolWindowFactory
+import org.jetbrains.plugins.terminal.TerminalView
+
 
 @Suppress("UnstableApiUsage")
 class GitpodToolWindowManagerListener(private val project: Project) : ToolWindowManagerListener {
@@ -44,18 +45,7 @@ class GitpodToolWindowManagerListener(private val project: Project) : ToolWindow
 
     private fun createSharedTerminal(supervisorTerminal: TerminalOuterClass.Terminal) = runInEdt {
         debug("Creating shared terminal '${supervisorTerminal.title}' on Backend IDE")
-        val inputStream = ByteArrayInputStream("echo hi".toByteArray())
-        val outputStream = ByteArrayOutputStream()
-        supervisorTerminal.writeTo(outputStream)
-        val process = CloudTerminalProcess(outputStream, inputStream)
-        val runner = CloudTerminalRunner(project, supervisorTerminal.title, process)
-        // This works to open the Terminal Tool Window:
-        // terminalView.createNewSession(terminalView.terminalRunner, TerminalTabState().also { it.myTabName = supervisorTerminal.title })
-        // But this doesn't:
-        terminalView.createNewSession(runner, TerminalTabState().also { it.myTabName = supervisorTerminal.title })
-        val shellTerminalWidget = terminalView.widgets.find {
-            widget -> terminalView.toolWindow.contentManager.getContent(widget).tabName == supervisorTerminal.title
-        } as ShellTerminalWidget
+        val shellTerminalWidget = terminalView.createLocalShellWidget(project.basePath, supervisorTerminal.alias)
         backendTerminalManager.shareTerminal(shellTerminalWidget, supervisorTerminal.alias)
         connectSupervisorStream(shellTerminalWidget, supervisorTerminal)
     }
