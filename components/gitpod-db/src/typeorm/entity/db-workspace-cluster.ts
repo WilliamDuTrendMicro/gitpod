@@ -58,7 +58,11 @@ export class DBWorkspaceCluster implements WorkspaceCluster {
     maxScore: number;
 
     @Column()
+    /** @deprecated */
     govern: boolean;
+
+    @Column()
+    governedBy: string;
 
     @Column({
         type: "simple-json",

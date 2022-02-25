@@ -4,9 +4,9 @@
  * See License-AGPL.txt in the project root for license information.
  */
 
- import { Repository, EntityManager, DeepPartial } from "typeorm";
- import { injectable, inject } from "inversify";
- import { TypeORM } from "./typeorm";
+import { Repository, EntityManager, DeepPartial } from "typeorm";
+import { injectable, inject } from "inversify";
+import { TypeORM } from "./typeorm";
 import { WorkspaceClusterDB } from "../workspace-cluster-db";
 import { DBWorkspaceCluster } from "./entity/db-workspace-cluster";
 import { WorkspaceCluster, WorkspaceClusterFilter, WorkspaceClusterWoTLS } from "@gitpod/gitpod-protocol/lib/workspace-cluster";
@@ -41,13 +41,13 @@ import { WorkspaceCluster, WorkspaceClusterFilter, WorkspaceClusterWoTLS } from 
 
 
     async findFiltered(predicate: DeepPartial<WorkspaceClusterFilter>): Promise<WorkspaceClusterWoTLS[]> {
-        const prototype: WorkspaceClusterWoTLS = {
+        const prototype: Omit<WorkspaceClusterWoTLS, "govern"> = {
             name: "",
             url: "",
             score: 0,
             maxScore: 0,
             state: "available",
-            govern: false,
+            governedBy: "",
             admissionConstraints: [],
         };
 
@@ -61,8 +61,8 @@ import { WorkspaceCluster, WorkspaceClusterFilter, WorkspaceClusterWoTLS } from 
         if (predicate.minScore !== undefined) {
             qb = qb.andWhere("wsc.score >= :minScore", predicate);
         }
-        if (predicate.govern !== undefined) {
-            qb = qb.andWhere("wsc.govern = :govern", predicate);
+        if (predicate.governedBy !== undefined) {
+            qb = qb.andWhere("wsc.governedBy = :governedBy", predicate);
         }
         if (predicate.url !== undefined) {
             qb = qb.andWhere("wsc.url = :url", predicate);
