@@ -7,7 +7,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 import { columnExists } from "./helper/helper";
 
-export class GovernBy1645797755961 implements MigrationInterface {
+export class GovernedBy1645797755961 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         const TABLE_NAME = "d_b_workspace_cluster";
@@ -16,6 +16,8 @@ export class GovernBy1645797755961 implements MigrationInterface {
         if (!(await columnExists(queryRunner, TABLE_NAME, COLUMN_NAME))) {
             await queryRunner.query(`ALTER TABLE ${TABLE_NAME} ADD COLUMN ${COLUMN_NAME} varchar(255) NOT NULL`);
         }
+
+        await queryRunner.query(`UPDATE TABLE ${TABLE_NAME} SET governedBy = '${process.env.INSTALLATION_SHORTNAME}' WHERE govern = TRUE`);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
