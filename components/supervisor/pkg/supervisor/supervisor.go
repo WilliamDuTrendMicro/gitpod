@@ -1569,7 +1569,7 @@ func trackReadiness(ctx context.Context, gitpodService *gitpod.APIoverJSONRPC, c
 				Kind:                kind,
 				WorkspaceId:         cfg.WorkspaceID,
 				WorkspaceInstanceId: cfg.WorkspaceInstanceID,
-				Timestamp:           time.Now().Unix(),
+				Timestamp:           time.Now().UnixMilli(),
 			},
 		})
 	}
