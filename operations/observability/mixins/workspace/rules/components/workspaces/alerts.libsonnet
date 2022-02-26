@@ -14,7 +14,7 @@
             labels: {
               severity: 'critical',
             },
-            'for': '1h',
+            'for': '20m',
             annotations: {
               runbook_url: 'https://github.com/gitpod-io/runbooks/blob/main/runbooks/GitpodWorkspaceStuckOnStarting.md',
               summary: '5 or more workspaces are stuck on starting',
@@ -31,7 +31,7 @@
             labels: {
               severity: 'critical',
             },
-            'for': '1h',
+            'for': '20m',
             annotations: {
               runbook_url: 'https://github.com/gitpod-io/runbooks/blob/main/runbooks/GitpodWorkspaceStuckOnStopping.md',
               summary: '5 or more workspaces are stuck on stopping',
