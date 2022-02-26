@@ -5,6 +5,8 @@ import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.openapi.wm.ex.ToolWindowManagerListener
+import com.jediterm.terminal.Questioner
+import com.jediterm.terminal.TtyConnector
 import com.jetbrains.rdserver.terminal.BackendTerminalManager
 import io.gitpod.supervisor.api.TerminalOuterClass
 import io.gitpod.supervisor.api.TerminalServiceGrpc
@@ -14,13 +16,11 @@ import kotlinx.coroutines.guava.asDeferred
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.plugins.terminal.ShellTerminalWidget
-import org.jetbrains.plugins.terminal.TerminalTabState
 import org.jetbrains.plugins.terminal.TerminalToolWindowFactory
 import org.jetbrains.plugins.terminal.TerminalView
-import org.jetbrains.plugins.terminal.cloud.CloudTerminalProcess
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.OutputStream
+import java.io.*
+import java.nio.charset.Charset
+
 
 @Suppress("UnstableApiUsage")
 class GitpodToolWindowManagerListener(private val project: Project) : ToolWindowManagerListener {
@@ -51,12 +51,56 @@ class GitpodToolWindowManagerListener(private val project: Project) : ToolWindow
         debug("Creating shared terminal '${supervisorTerminal.title}' on Backend IDE")
         val inputStream = ByteArrayInputStream(ByteArray(4096))
         val outputStream = ByteArrayOutputStream()
-        val process = CloudTerminalProcess(outputStream, inputStream)
-        val runner = GitpodTerminalRunner(project, supervisorTerminal.title, process)
-        terminalView.createNewSession(runner, TerminalTabState().also { it.myTabName = supervisorTerminal.title })
-        val shellTerminalWidget = terminalView.widgets.find {
-            widget -> terminalView.toolWindow.contentManager.getContent(widget).tabName == supervisorTerminal.title
-        } as ShellTerminalWidget
+        val shellTerminalWidget = terminalView.createLocalShellWidget(project.basePath, supervisorTerminal.title, true)
+        shellTerminalWidget.ttyConnector = object : TtyConnector {
+            private val inputStreamReader: InputStreamReader = InputStreamReader(inputStream)
+
+            override fun init(q: Questioner): Boolean {
+                return true
+            }
+
+            override fun close() {
+                try {
+                    outputStream.close()
+                    inputStream.close()
+                } catch (e: Exception) {
+                    throw RuntimeException("Unable to close streams.", e)
+                }
+            }
+
+            override fun getName(): String {
+                return "TtyConnector"
+            }
+
+            @Throws(IOException::class)
+            override fun read(buf: CharArray, offset: Int, length: Int): Int {
+                return inputStreamReader.read(buf, offset, length)
+            }
+
+            @Throws(IOException::class)
+            override fun write(bytes: ByteArray) {
+                outputStream.write(bytes)
+                outputStream.flush()
+            }
+
+            override fun isConnected(): Boolean {
+                return true
+            }
+
+            @Throws(IOException::class)
+            override fun write(string: String) {
+                write(string.toByteArray(Charset.defaultCharset()))
+            }
+
+            override fun waitFor(): Int {
+                return 0
+            }
+
+            override fun ready(): Boolean {
+                return true
+            }
+        }
+
         backendTerminalManager.shareTerminal(shellTerminalWidget, supervisorTerminal.alias)
         connectSupervisorStream(shellTerminalWidget, supervisorTerminal, outputStream)
     }
