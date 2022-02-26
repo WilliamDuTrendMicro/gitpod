@@ -14,9 +14,13 @@ import kotlinx.coroutines.guava.asDeferred
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.plugins.terminal.ShellTerminalWidget
+import org.jetbrains.plugins.terminal.TerminalTabState
 import org.jetbrains.plugins.terminal.TerminalToolWindowFactory
 import org.jetbrains.plugins.terminal.TerminalView
-
+import org.jetbrains.plugins.terminal.cloud.CloudTerminalProcess
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.OutputStream
 
 @Suppress("UnstableApiUsage")
 class GitpodToolWindowManagerListener(private val project: Project) : ToolWindowManagerListener {
@@ -45,12 +49,19 @@ class GitpodToolWindowManagerListener(private val project: Project) : ToolWindow
 
     private fun createSharedTerminal(supervisorTerminal: TerminalOuterClass.Terminal) = runInEdt {
         debug("Creating shared terminal '${supervisorTerminal.title}' on Backend IDE")
-        val shellTerminalWidget = terminalView.createLocalShellWidget(project.basePath, supervisorTerminal.alias)
+        val inputStream = ByteArrayInputStream(ByteArray(4096))
+        val outputStream = ByteArrayOutputStream()
+        val process = CloudTerminalProcess(outputStream, inputStream)
+        val runner = GitpodTerminalRunner(project, supervisorTerminal.title, process)
+        terminalView.createNewSession(runner, TerminalTabState().also { it.myTabName = supervisorTerminal.title })
+        val shellTerminalWidget = terminalView.widgets.find {
+            widget -> terminalView.toolWindow.contentManager.getContent(widget).tabName == supervisorTerminal.title
+        } as ShellTerminalWidget
         backendTerminalManager.shareTerminal(shellTerminalWidget, supervisorTerminal.alias)
-        connectSupervisorStream(shellTerminalWidget, supervisorTerminal)
+        connectSupervisorStream(shellTerminalWidget, supervisorTerminal, outputStream)
     }
 
-    private fun connectSupervisorStream(shellTerminalWidget: ShellTerminalWidget, supervisorTerminal: TerminalOuterClass.Terminal) {
+    private fun connectSupervisorStream(shellTerminalWidget: ShellTerminalWidget, supervisorTerminal: TerminalOuterClass.Terminal, outputStream: OutputStream) {
         val listenTerminalRequest = TerminalOuterClass.ListenTerminalRequest.newBuilder().setAlias(supervisorTerminal.alias).build()
 
         val terminalResponseObserver = object : StreamObserver<TerminalOuterClass.ListenTerminalResponse> {
@@ -67,9 +78,8 @@ class GitpodToolWindowManagerListener(private val project: Project) : ToolWindow
                         }
 
                         response.hasData() -> {
-                            val message = response.data.toStringUtf8()
-                            debug("Printing '${message}' on '${supervisorTerminal.title}' terminal.")
-                            shellTerminalWidget.writePlainMessage("${message}\n")
+                            debug("Printing '${response.data.toStringUtf8()}' on '${supervisorTerminal.title}' terminal.")
+                            outputStream.write(response.data.toByteArray())
                         }
 
                         response.hasExitCode() -> {
