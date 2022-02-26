@@ -54,7 +54,6 @@ func main() {
 
 	// install extension with filepath
 	extPathArgs := []string{}
-	shouldRunExtPathArgs := false
 
 	if os.Getenv("SUPERVISOR_DEBUG_ENABLE") == "true" {
 		args = append(args, "--inspect", "--log=trace")
@@ -85,17 +84,14 @@ func main() {
 			args = append(args, "--install-extension", ext.Location)
 		} else {
 			extPathArgs = append(extPathArgs, "--install-extension", ext.Location)
-			shouldRunExtPathArgs = true
 		}
 	}
 
-	// ensure extensions install in correct dir
-	extPathArgs = append(extPathArgs, os.Args[1:]...)
-	args = append(args, os.Args[1:]...)
-
 	// install path extension first
 	// see https://github.com/microsoft/vscode/issues/143617#issuecomment-1047881213
-	if shouldRunExtPathArgs {
+	if len(extPathArgs) > 0 {
+		// ensure extensions install in correct dir
+		extPathArgs = append(extPathArgs, os.Args[1:]...)
 		log.Info("installing extensions by path")
 		cmd := exec.Command(Code, extPathArgs...)
 		cmd.Stderr = os.Stderr
@@ -106,6 +102,7 @@ func main() {
 		log.WithField("cost", time.Now().Local().Sub(startTime).Milliseconds()).Info("extensions with path installed")
 	}
 
+	args = append(args, os.Args[1:]...)
 	log.WithField("cost", time.Now().Local().Sub(startTime).Milliseconds()).Info("starting server")
 	cmd := exec.Command(Code, args...)
 	cmd.Stderr = os.Stderr
