@@ -79,11 +79,11 @@ pod:
       # INTEGRATION_VERSION=$(docker run eu.gcr.io/gitpod-core-dev/build/versions:${VERSION} cat versions.yaml | yq r - 'components.integrationTest.version')
 
       # only for test now
-      INTEGRATION_VERSION=jp-run-integration-test.80
+      INTEGRATION_VERSION=pd-jetbrains-integration-test.46
       echo "using integration-test image: ${INTEGRATION_VERSION}" | werft log slice "test"
 
 
-      TEST_BUILD_ID=$(werft run github -a version=${INTEGRATION_VERSION} -a namespace=staging-gitpod-test-main -j .werft/run-integration-tests-ide.yaml -a testPattern=ide.test github.com/gitpod-io/gitpod:main)
+      TEST_BUILD_ID=$(werft run github -a version=${INTEGRATION_VERSION} -a namespace=staging-gitpod-test-main -j .werft/run-integration-tests-ide.yaml -a testPattern=jetbrains.test github.com/gitpod-io/gitpod:main)
 
       echo "running integration, job name: ${TEST_BUILD_ID}" | werft log slice "test"
       werft log result -d "integration test job" url "https://werft.gitpod-dev.com/job/${TEST_BUILD_ID}"

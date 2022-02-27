@@ -28,7 +28,7 @@ import java.util.*
 import java.util.prefs.Preferences
 
 @Timeout(value = 25, unit = TimeUnit.MINUTES)
-class CommandLineProjectTest {
+class GatewayLauncherTest {
     companion object {
         private var gatewayProcess: Process? = null
         private var tmpDir: Path = Files.createTempDirectory("launcher")
@@ -60,6 +60,7 @@ class CommandLineProjectTest {
     @Test
     @Video
     fun test() {
+        // bypass privacy_policy
         setPreferences("jetbrains.privacy_policy.accepted_version", "999.999")
         setPreferences("jetbrains.privacy_policy.cwmguesteua_accepted_version", "999.999")
         setPreferences("jetbrains.privacy_policy.ij_euaeap_accepted_version", "999.999")
@@ -96,3 +97,7 @@ class CommandLineProjectTest {
         Thread.sleep(1000 * 120)
     }
 }
+
+fun RemoteRobot.isAvailable(): Boolean = runCatching {
+    callJs<Boolean>("true")
+}.getOrDefault(false)

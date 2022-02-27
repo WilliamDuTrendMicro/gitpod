@@ -2,7 +2,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.6.10'
 }
 
-group 'org.example'
+group 'io.gitpod'
 version '1.0-SNAPSHOT'
 
 repositories {
@@ -11,14 +11,14 @@ repositories {
 }
 
 test {
-    systemProperty 'video.save.mode', 'ALL'
-    systemProperty 'gateway_link', System.getenv('GATEWAY_LINK')
-    systemProperty 'gateway_plugin_path', System.getenv('GATEWAY_PLUGIN_PATH')
+    systemProperty('video.save.mode', 'ALL')
+    systemProperty('gateway_link', System.getenv('GATEWAY_LINK'))
+    systemProperty('gateway_plugin_path', System.getenv('GATEWAY_PLUGIN_PATH'))
     useJUnitPlatform()
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation("org.jetbrains.kotlin:kotlin-stdlib")
 
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
@@ -29,8 +29,8 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
 
     // Logging Network Calls
-    testImplementation 'com.squareup.okhttp3:logging-interceptor:4.9.3'
+    testImplementation('com.squareup.okhttp3:logging-interceptor:4.9.3')
 
     // Video Recording
-    implementation 'com.automation-remarks:video-recorder-junit5:2.0'
+    implementation('com.automation-remarks:video-recorder-junit5:2.0')
 }
