@@ -97,7 +97,7 @@ type DispatchListener struct {
 }
 
 type workspace struct {
-	CFS       CgroupCFSController
+	CFS       CgroupV1CFSController
 	OWI       logrus.Fields
 	HardLimit ResourceLimiter
 
@@ -176,7 +176,7 @@ func (d *DispatchListener) WorkspaceAdded(ctx context.Context, ws *dispatch.Work
 	}
 
 	d.workspaces[ws.InstanceID] = &workspace{
-		CFS: CgroupCFSController(filepath.Join(d.Config.CGroupBasePath, "cpu", cgroupPath)),
+		CFS: CgroupV1CFSController(filepath.Join(d.Config.CGroupBasePath, "cpu", cgroupPath)),
 		OWI: ws.OWI(),
 	}
 	go func() {

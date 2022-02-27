@@ -16,11 +16,11 @@ import (
 	"golang.org/x/xerrors"
 )
 
-// CgroupCFSController controls a cgroup's CFS settings
-type CgroupCFSController string
+// CgroupV1CFSController controls a cgroup's CFS settings
+type CgroupV1CFSController string
 
 // Usage returns the cpuacct.usage value of the cgroup
-func (basePath CgroupCFSController) Usage() (usage CPUTime, err error) {
+func (basePath CgroupV1CFSController) Usage() (usage CPUTime, err error) {
 
 	cpuTimeInNS, err := basePath.readUint64("cpuacct.usage")
 	if err != nil {
@@ -31,7 +31,7 @@ func (basePath CgroupCFSController) Usage() (usage CPUTime, err error) {
 }
 
 // SetQuota sets a new CFS quota on the cgroup
-func (basePath CgroupCFSController) SetLimit(limit Bandwidth) (changed bool, err error) {
+func (basePath CgroupV1CFSController) SetLimit(limit Bandwidth) (changed bool, err error) {
 	p, err := basePath.readUint64("cpu.cfs_period_us")
 	if err != nil {
 		err = xerrors.Errorf("cannot parse CFS period: %w", err)
@@ -58,8 +58,8 @@ func (basePath CgroupCFSController) SetLimit(limit Bandwidth) (changed bool, err
 	return true, nil
 }
 
-func (basePath CgroupCFSController) readParentQuota() time.Duration {
-	parent := CgroupCFSController(filepath.Dir(string(basePath)))
+func (basePath CgroupV1CFSController) readParentQuota() time.Duration {
+	parent := CgroupV1CFSController(filepath.Dir(string(basePath)))
 	pq, err := parent.readUint64("cpu.cfs_quota_us")
 	if err != nil {
 		return time.Duration(0)
@@ -68,7 +68,7 @@ func (basePath CgroupCFSController) readParentQuota() time.Duration {
 	return time.Duration(pq) * time.Microsecond
 }
 
-func (basePath CgroupCFSController) readUint64(path string) (uint64, error) {
+func (basePath CgroupV1CFSController) readUint64(path string) (uint64, error) {
 	fn := filepath.Join(string(basePath), path)
 	fc, err := os.ReadFile(fn)
 	if err != nil {
@@ -88,7 +88,7 @@ func (basePath CgroupCFSController) readUint64(path string) (uint64, error) {
 }
 
 // NrThrottled returns the number of CFS periods the cgroup was throttled in
-func (basePath CgroupCFSController) NrThrottled() (uint64, error) {
+func (basePath CgroupV1CFSController) NrThrottled() (uint64, error) {
 	f, err := os.Open(filepath.Join(string(basePath), "cpu.stat"))
 	if err != nil {
 		return 0, xerrors.Errorf("cannot read cpu.stat: %w", err)
