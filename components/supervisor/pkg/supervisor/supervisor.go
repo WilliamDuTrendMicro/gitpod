@@ -841,6 +841,7 @@ func buildChildProcEnv(cfg *Config, envvars []string) []string {
 		envs[nme] = val
 	}
 	envs["SUPERVISOR_ADDR"] = fmt.Sprintf("localhost:%d", cfg.APIEndpointPort)
+	envs["HISTFILE"] = "/workspace/.gitpod/.history"
 
 	if cfg.EnvvarOTS != "" {
 		es, err := downloadEnvvarOTS(cfg.EnvvarOTS)
